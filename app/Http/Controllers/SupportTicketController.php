@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateSupportTicketRequest;
 use App\Models\SupportTicket;
 use App\Services\SupportTicketService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 
 class SupportTicketController extends Controller
@@ -20,9 +21,13 @@ class SupportTicketController extends Controller
         );
     }
 
-    public function store(StoreSupportTicketRequest $request): JsonResponse
+    public function store(StoreSupportTicketRequest $request): JsonResponse|RedirectResponse
     {
-        $ticket = SupportTicket::create($request->validated());
+        $ticket = $this->ticketService->create($request->validated());
+
+        if ($request->header('X-Inertia')) {
+            return redirect()->route('dashboard');
+        }
 
         return response()->json(
             $ticket->load(['employee.department', 'technician', 'category']),
@@ -37,12 +42,16 @@ class SupportTicketController extends Controller
         );
     }
 
-    public function update(UpdateSupportTicketRequest $request, SupportTicket $supportTicket): JsonResponse
+    public function update(UpdateSupportTicketRequest $request, SupportTicket $supportTicket): JsonResponse|RedirectResponse
     {
         $this->ticketService->update(
             $supportTicket,
             $request->validated()
         );
+
+        if ($request->header('X-Inertia')) {
+            return redirect()->route('dashboard');
+        }
 
         return response()->json(
             $supportTicket->load(['employee.department', 'technician', 'category'])
