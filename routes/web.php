@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\SupportTicketController;
+use App\Http\Controllers\TechnicianController;
 use App\Models\Category;
+use App\Models\Department;
 use App\Models\Employee;
 use App\Models\SupportTicket;
 use App\Models\Technician;
@@ -50,6 +52,9 @@ Route::middleware(['auth'])->group(function () {
                     'name' => $employee->name,
                     'department' => $employee->department?->name,
                 ]),
+            'departments' => Department::query()
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'categories' => Category::query()
                 ->orderBy('name')
                 ->get(['id', 'name']),
@@ -60,6 +65,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 
     Route::apiResource('employees', EmployeeController::class);
+    Route::apiResource('technicians', TechnicianController::class)->only(['index', 'store']);
     Route::apiResource('support-tickets', SupportTicketController::class);
 });
 

@@ -30,6 +30,40 @@ class SupportTicketControllerTest extends TestCase
             ->assertJsonPath('department.name', 'IT');
     }
 
+    public function test_employee_can_be_created_from_the_dashboard(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $department = Department::create(['name' => 'IT']);
+
+        $this->post('/employees', [
+            'name' => 'Jordan Employee',
+            'department_id' => $department->id,
+        ], ['X-Inertia' => 'true'])
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseHas('employees', [
+            'name' => 'Jordan Employee',
+            'department_id' => $department->id,
+        ]);
+    }
+
+    public function test_technician_can_be_created_from_the_dashboard(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->post('/technicians', [
+            'name' => 'Morgan Technician',
+        ], ['X-Inertia' => 'true'])
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseHas('technicians', [
+            'name' => 'Morgan Technician',
+        ]);
+
+        $this->get('/dashboard')->assertInertia(fn (Assert $page) => $page
+            ->has('technicians', 1));
+    }
+
     public function test_ticket_controller_applies_text_and_resolution_rules(): void
     {
         $this->actingAs(User::factory()->create());
@@ -110,6 +144,7 @@ class SupportTicketControllerTest extends TestCase
         $this->get('/dashboard')->assertOk()->assertInertia(fn (Assert $page) => $page
             ->component('dashboard')
             ->has('employees', 1)
+            ->has('departments', 1)
             ->has('categories', 1)
             ->has('technicians', 1)
             ->has('allTickets', 1)

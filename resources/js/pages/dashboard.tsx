@@ -54,6 +54,13 @@ type UpdateTicketFormData = {
     ticket_status: string;
     resolution_notes: string;
 };
+type EmployeeFormData = {
+    name: string;
+    department_id: string;
+};
+type TechnicianFormData = {
+    name: string;
+};
 type DashboardPageProps = SharedData & {
     ticketStats: {
         total: number;
@@ -64,6 +71,7 @@ type DashboardPageProps = SharedData & {
     recentTickets: DashboardTicket[];
     allTickets: DashboardTicket[];
     employees: { id: number; name: string; department: string | null }[];
+    departments: { id: number; name: string }[];
     categories: { id: number; name: string }[];
     technicians: { id: number; name: string }[];
 };
@@ -82,7 +90,8 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function Dashboard() {
-    const { auth, ticketStats, recentTickets, allTickets, employees, categories, technicians } = usePage<DashboardPageProps>().props;
+    const { auth, ticketStats, recentTickets, allTickets, employees, departments, categories, technicians } =
+        usePage<DashboardPageProps>().props;
     const user = auth.user;
     const initials = user.name
         .split(/\s+/)
@@ -96,6 +105,8 @@ export default function Dashboard() {
     const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
     const [profileMenuOpen, setProfileMenuOpen] = useState(false);
     const [addTicketOpen, setAddTicketOpen] = useState(false);
+    const [addEmployeeOpen, setAddEmployeeOpen] = useState(false);
+    const [addTechnicianOpen, setAddTechnicianOpen] = useState(false);
     const ticketForm = useForm<TicketFormData>({
         employee_id: '',
         technician_id: '',
@@ -109,6 +120,13 @@ export default function Dashboard() {
         priority_level: 'Medium',
         ticket_status: 'Open',
         resolution_notes: '',
+    });
+    const employeeForm = useForm<EmployeeFormData>({
+        name: '',
+        department_id: '',
+    });
+    const technicianForm = useForm<TechnicianFormData>({
+        name: '',
     });
     const visibleTickets = allTickets.filter((ticket) => {
         if (ticketFilter === 'Open') return ticket.status === 'Open';
@@ -541,6 +559,96 @@ export default function Dashboard() {
                                             )}
                                         </div>
                                     </>
+                                ) : activePage === 'Employees' ? (
+                                    <>
+                                        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                                            <div>
+                                                <h1 className="text-3xl font-bold text-slate-800">Employees</h1>
+                                                <p className="mt-1 text-slate-500">Employees registered in the helpdesk system.</p>
+                                            </div>
+                                            <span className="rounded-full bg-[#dfe8ff] px-3 py-1 text-sm font-semibold text-[#2f4d93]">
+                                                {employees.length} {employees.length === 1 ? 'employee' : 'employees'}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setAddEmployeeOpen(true)}
+                                                className="inline-flex items-center gap-2 rounded-xl bg-[#3158a5] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#27498d]"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                                Add Employee
+                                            </button>
+                                        </div>
+                                        {employees.length > 0 ? (
+                                            <div className="overflow-hidden rounded-xl border border-[#dfe8f5]">
+                                                <table className="min-w-full divide-y divide-[#dfe8f5] bg-white text-left">
+                                                    <thead className="bg-[#f5f8ff] text-sm font-semibold text-slate-700">
+                                                        <tr>
+                                                            <th className="px-4 py-3">Employee ID</th>
+                                                            <th className="px-4 py-3">Name</th>
+                                                            <th className="px-4 py-3">Department</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-[#edf2fb] text-sm text-slate-700">
+                                                        {employees.map((employee) => (
+                                                            <tr key={employee.id} className="hover:bg-[#f9fbff]">
+                                                                <td className="px-4 py-3 font-medium">#{employee.id}</td>
+                                                                <td className="px-4 py-3">{employee.name}</td>
+                                                                <td className="px-4 py-3">{employee.department ?? 'No department assigned'}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        ) : (
+                                            <div className="rounded-xl bg-[#f4f7ff] p-8 text-center">
+                                                <p className="font-medium text-slate-700">No employee records to display.</p>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : activePage === 'Technicians' ? (
+                                    <>
+                                        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                                            <div>
+                                                <h1 className="text-3xl font-bold text-slate-800">Technicians</h1>
+                                                <p className="mt-1 text-slate-500">Technicians available to handle support tickets.</p>
+                                            </div>
+                                            <span className="rounded-full bg-[#dfe8ff] px-3 py-1 text-sm font-semibold text-[#2f4d93]">
+                                                {technicians.length} {technicians.length === 1 ? 'technician' : 'technicians'}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setAddTechnicianOpen(true)}
+                                                className="inline-flex items-center gap-2 rounded-xl bg-[#3158a5] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#27498d]"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                                Add Technician
+                                            </button>
+                                        </div>
+                                        {technicians.length > 0 ? (
+                                            <div className="overflow-hidden rounded-xl border border-[#dfe8f5]">
+                                                <table className="min-w-full divide-y divide-[#dfe8f5] bg-white text-left">
+                                                    <thead className="bg-[#f5f8ff] text-sm font-semibold text-slate-700">
+                                                        <tr>
+                                                            <th className="px-4 py-3">Technician ID</th>
+                                                            <th className="px-4 py-3">Name</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-[#edf2fb] text-sm text-slate-700">
+                                                        {technicians.map((technician) => (
+                                                            <tr key={technician.id} className="hover:bg-[#f9fbff]">
+                                                                <td className="px-4 py-3 font-medium">#{technician.id}</td>
+                                                                <td className="px-4 py-3">{technician.name}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        ) : (
+                                            <div className="rounded-xl bg-[#f4f7ff] p-8 text-center">
+                                                <p className="font-medium text-slate-700">No technician records to display.</p>
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <>
                                         <h1 className="text-3xl font-bold text-slate-800">{activePage}</h1>
@@ -675,6 +783,162 @@ export default function Dashboard() {
                                     className="rounded-xl bg-[#3158a5] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#27498d] disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {ticketForm.processing ? 'Creating…' : 'Create Ticket'}
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+            )}
+            {addEmployeeOpen && (
+                <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-slate-950/40 p-4">
+                    <section
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="add-employee-title"
+                        className="my-auto w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl"
+                    >
+                        <div className="mb-6 flex items-start justify-between gap-4">
+                            <div>
+                                <h2 id="add-employee-title" className="text-2xl font-bold text-slate-800">Add employee</h2>
+                                <p className="mt-1 text-sm text-slate-500">Enter the employee name and department.</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setAddEmployeeOpen(false)}
+                                className="rounded-lg px-3 py-1 text-2xl leading-none text-slate-500 hover:bg-slate-100"
+                                aria-label="Close form"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        {departments.length === 0 && (
+                            <p role="alert" className="mb-5 rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
+                                Add a department before creating an employee record.
+                            </p>
+                        )}
+                        <form
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                employeeForm.post('/employees', {
+                                    preserveScroll: true,
+                                    onSuccess: () => {
+                                        employeeForm.reset();
+                                        setAddEmployeeOpen(false);
+                                    },
+                                });
+                            }}
+                            className="space-y-4"
+                        >
+                            <label className="block text-sm font-medium text-slate-700">
+                                Employee name
+                                <input
+                                    type="text"
+                                    value={employeeForm.data.name}
+                                    onChange={(event) => employeeForm.setData('name', event.target.value)}
+                                    maxLength={255}
+                                    required
+                                    className="mt-1.5 block w-full rounded-lg border border-slate-300 px-3 py-2.5 font-normal"
+                                />
+                                {employeeForm.errors.name && <span className="mt-1 block text-xs text-red-600">{employeeForm.errors.name}</span>}
+                            </label>
+                            <label className="block text-sm font-medium text-slate-700">
+                                Department
+                                <select
+                                    value={employeeForm.data.department_id}
+                                    onChange={(event) => employeeForm.setData('department_id', event.target.value)}
+                                    required
+                                    className="mt-1.5 block w-full rounded-lg border border-slate-300 px-3 py-2.5 font-normal"
+                                >
+                                    <option value="">Select department</option>
+                                    {departments.map((department) => (
+                                        <option key={department.id} value={department.id}>{department.name}</option>
+                                    ))}
+                                </select>
+                                {employeeForm.errors.department_id && (
+                                    <span className="mt-1 block text-xs text-red-600">{employeeForm.errors.department_id}</span>
+                                )}
+                            </label>
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setAddEmployeeOpen(false)}
+                                    className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={employeeForm.processing || departments.length === 0}
+                                    className="rounded-xl bg-[#3158a5] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#27498d] disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {employeeForm.processing ? 'Saving…' : 'Save Employee'}
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+            )}
+            {addTechnicianOpen && (
+                <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-slate-950/40 p-4">
+                    <section
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="add-technician-title"
+                        className="my-auto w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl"
+                    >
+                        <div className="mb-6 flex items-start justify-between gap-4">
+                            <div>
+                                <h2 id="add-technician-title" className="text-2xl font-bold text-slate-800">Add technician</h2>
+                                <p className="mt-1 text-sm text-slate-500">Enter the technician name.</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setAddTechnicianOpen(false)}
+                                className="rounded-lg px-3 py-1 text-2xl leading-none text-slate-500 hover:bg-slate-100"
+                                aria-label="Close form"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <form
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                technicianForm.post('/technicians', {
+                                    preserveScroll: true,
+                                    onSuccess: () => {
+                                        technicianForm.reset();
+                                        setAddTechnicianOpen(false);
+                                    },
+                                });
+                            }}
+                            className="space-y-4"
+                        >
+                            <label className="block text-sm font-medium text-slate-700">
+                                Technician name
+                                <input
+                                    type="text"
+                                    value={technicianForm.data.name}
+                                    onChange={(event) => technicianForm.setData('name', event.target.value)}
+                                    maxLength={255}
+                                    required
+                                    className="mt-1.5 block w-full rounded-lg border border-slate-300 px-3 py-2.5 font-normal"
+                                />
+                                {technicianForm.errors.name && <span className="mt-1 block text-xs text-red-600">{technicianForm.errors.name}</span>}
+                            </label>
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setAddTechnicianOpen(false)}
+                                    className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={technicianForm.processing}
+                                    className="rounded-xl bg-[#3158a5] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#27498d] disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {technicianForm.processing ? 'Saving…' : 'Save Technician'}
                                 </button>
                             </div>
                         </form>
