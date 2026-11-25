@@ -21,7 +21,6 @@ class SupportTicket extends Model
         'category_id',
         'priority_level',
         'ticket_description',
-        'resolved_at',
         'resolution_notes',
         'ticket_status',
     ];
@@ -46,6 +45,14 @@ class SupportTicket extends Model
             if ($ticket->getOriginal('ticket_status') === self::STATUS_CLOSED) {
                 throw ValidationException::withMessages([
                     'ticket_status' => 'Closed tickets cannot be edited.',
+                ]);
+            }
+        });
+
+        static::deleting(function (SupportTicket $ticket): void {
+            if ($ticket->ticket_status === self::STATUS_CLOSED) {
+                throw ValidationException::withMessages([
+                    'ticket_status' => 'Closed tickets cannot be deleted.',
                 ]);
             }
         });

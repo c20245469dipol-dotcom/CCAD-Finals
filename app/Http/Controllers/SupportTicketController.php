@@ -8,7 +8,6 @@ use App\Models\SupportTicket;
 use App\Services\SupportTicketService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\ValidationException;
 
 class SupportTicketController extends Controller
 {
@@ -60,13 +59,7 @@ class SupportTicketController extends Controller
 
     public function destroy(SupportTicket $supportTicket): JsonResponse
     {
-        if ($supportTicket->ticket_status === SupportTicket::STATUS_CLOSED) {
-            throw ValidationException::withMessages([
-                'ticket_status' => 'Closed tickets cannot be edited or deleted.',
-            ]);
-        }
-
-        $supportTicket->delete();
+        $this->ticketService->delete($supportTicket);
 
         return response()->json(status: 204);
     }

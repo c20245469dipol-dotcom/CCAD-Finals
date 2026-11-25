@@ -43,6 +43,15 @@ class SupportTicketTest extends TestCase
         $ticket->update(['priority_level' => 'Urgent']);
     }
 
+    public function test_closed_tickets_cannot_be_deleted(): void
+    {
+        $ticket = $this->makeTicket(SupportTicket::STATUS_CLOSED);
+
+        $this->expectException(ValidationException::class);
+
+        $ticket->delete();
+    }
+
     private function makeTicket(string $status = 'Open'): SupportTicket
     {
         $department = Department::create(['name' => 'IT']);
